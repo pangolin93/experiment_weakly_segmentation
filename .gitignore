@@ -1,3 +1,48 @@
+# These are some examples of commonly ignored file patterns.
+# You should customize this list as applicable to your project.
+# Learn more about .gitignore:
+#     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
+
+# Most of the content is taken from https://github.com/github/gitignore/blob/master/Python.gitignore
+
+conda_env/
+
+# notebook checkpoints
+notebooks/.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+
+# Environments
+.env
+.venv
+env/
+venv/
+venv-*/
+ENV/
+env.bak/
+venv.bak/
+
+# Data
+*.csv
+*.p
+
+data/output/supervised/
+
+# Logs
+**/logs
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -101,15 +146,6 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -127,3 +163,37 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Node artifact files
+node_modules/
+dist/
+
+# Compiled Java class files
+*.class
+
+# Log files
+*.log
+
+# Package files
+*.jar
+
+# Maven
+target/
+dist/
+
+# Unit test reports
+TEST*.xml
+
+# Applications
+*.app
+*.exe
+*.war
+
+# Large media files
+*.mp4
+*.tiff
+*.avi
+*.flv
+*.mov
+*.wmv
+
