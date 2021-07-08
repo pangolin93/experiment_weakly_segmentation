@@ -1,0 +1,25 @@
+# more info here
+# https://docs.docker.com/compose/compose-file/compose-file-v3/
+
+version: "3"
+
+services:
+
+  weakseg_service:
+
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+    
+    container_name: weakseg
+
+    image: "weakseg:latest"
+    
+    ports:
+      - 9661:9661/udp
+      - 9661:9661/tcp
+    
+    volumes:
+      # Path on the host, relative to the Compose file
+      - ./logs:/application/logs
+      - ./data:/application/data
