@@ -1,4 +1,5 @@
 import os
+from weakseg.ml.transform_mask import from_multiclass_mask_to_rgb
 import cv2
 import numpy as np
 
@@ -6,7 +7,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 
 from weakseg import DATA_DIR, DICT_COLOR_INDEX
-
+from weakseg.utils.utils_plot import visualize
 class Dataset(BaseDataset):
     """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
     
@@ -89,3 +90,8 @@ if __name__ == '__main__':
     image, mask = dataset[42] # get some sample
 
     print((image.shape, mask.shape))
+
+    visualize(
+        image=image.astype(int), 
+        rgb_mask = from_multiclass_mask_to_rgb(mask).astype(int),
+    )
