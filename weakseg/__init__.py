@@ -21,6 +21,7 @@ DICT_COLOR_INDEX = {
 # now i am swapping keys and values
 DICT_INDEX_COLOR = {v: k for k, v in DICT_COLOR_INDEX.items()}
 
+DEVICE = 'CUDA'
 
 RANDOM_STATE = 21
 
