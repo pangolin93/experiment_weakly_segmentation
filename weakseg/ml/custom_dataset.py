@@ -5,7 +5,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 
-from weakseg import DICT_COLOR_CLS
+from weakseg import DATA_DIR, DICT_COLOR_CLS
 
 class Dataset(BaseDataset):
     """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
@@ -41,7 +41,7 @@ class Dataset(BaseDataset):
 
         self.masks_fps = [os.path.join(masks_dir, image_id) for image_id in self.ids]
 
-        self.class_values = self.CLASSES
+        self.class_values = self.DICT_COLOR_CLS
         
         self.augmentation = augmentation
         self.preprocessing = preprocessing
@@ -56,7 +56,7 @@ class Dataset(BaseDataset):
         original_mask = cv2.cvtColor(original_mask, cv2.COLOR_BGR2RGB)
 
         # extract certain classes from mask
-        masks = [(np.all(original_mask == k, axis=-1)) for k in self.CLASSES]
+        masks = [(np.all(original_mask == k, axis=-1)) for k in self.DICT_COLOR_CLS]
         mask = np.stack(masks, axis=-1).astype('float')
         
         # apply augmentations
@@ -73,3 +73,19 @@ class Dataset(BaseDataset):
         
     def __len__(self):
         return len(self.images_fps)
+
+
+if __name__ == '__main__':
+
+
+    x_train_dir = os.path.join(DATA_DIR, 'train_images')
+    y_train_dir = os.path.join(DATA_DIR, 'train_labels')
+
+    x_valid_dir = os.path.join(DATA_DIR, 'val_images')
+    y_valid_dir = os.path.join(DATA_DIR, 'val_labels')
+
+    dataset = Dataset(x_train_dir, y_train_dir)
+
+    image, mask = dataset[42] # get some sample
+
+    print((image.shape, mask.shape))

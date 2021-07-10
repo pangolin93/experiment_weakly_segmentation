@@ -4,7 +4,7 @@ from weakseg.general_utils import init_logger
 
 PACKAGE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
-DATA_DIR = os.path.join(PACKAGE_DIR, 'data')
+DATA_DIR = os.path.join(os.path.dirname(PACKAGE_DIR), 'data')
 LOGS_LOCATION = os.path.join(os.path.dirname(PACKAGE_DIR), 'logs')
 
 # mapping with colors i wanna consider
