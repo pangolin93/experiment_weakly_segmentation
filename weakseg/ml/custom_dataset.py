@@ -4,7 +4,6 @@ from weakseg.ml.transform_mask import from_multiclass_mask_to_rgb
 import cv2
 import numpy as np
 
-from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 
 from weakseg import DATA_DIR, DICT_COLOR_INDEX
