@@ -1,8 +1,8 @@
 name: segweak
 channels:
   - pytorch
-  - nvidia
   - conda-forge
+  - nvidia
   - defaults
 dependencies:
   - _libgcc_mutex=0.1
@@ -10,25 +10,31 @@ dependencies:
   - blas=1.0
   - bzip2=1.0.8
   - ca-certificates=2021.7.5
-  - cairo=1.14.12
+  - cairo=1.16.0
   - certifi=2021.5.30
   - cudatoolkit=11.1.74
+  - cycler=0.10.0
+  - dbus=1.13.18
+  - expat=2.4.1
   - ffmpeg=4.0
   - fontconfig=2.13.1
   - freeglut=3.2.1
   - freetype=2.10.4
   - gettext=0.19.8.1
-  - glib=2.55.0
+  - glib=2.69.0
   - gmp=6.2.1
   - gnutls=3.6.15
   - graphite2=1.3.13
-  - harfbuzz=1.9.0
+  - gst-plugins-base=1.14.0
+  - gstreamer=1.14.0
+  - harfbuzz=1.8.8
   - hdf5=1.10.2
   - icu=58.2
   - intel-openmp=2021.2.0
   - jasper=2.0.14
   - joblib=1.0.1
   - jpeg=9b
+  - kiwisolver=1.3.1
   - lame=3.100
   - lcms2=2.12
   - ld_impl_linux-64=2.35.1
@@ -52,9 +58,11 @@ dependencies:
   - libuv=1.40.0
   - libvpx=1.7.0
   - libwebp-base=1.2.0
-  - libxcb=1.13
+  - libxcb=1.14
   - libxml2=2.9.9
   - lz4-c=1.9.3
+  - matplotlib=3.3.4
+  - matplotlib-base=3.3.4
   - mkl=2021.2.0
   - mkl-service=2.3.0
   - mkl_fft=1.3.0
@@ -69,25 +77,34 @@ dependencies:
   - openh264=2.1.0
   - openjpeg=2.3.0
   - openssl=1.1.1k
+  - pandas=1.2.5
   - pcre=8.45
   - pillow=8.3.1
   - pip=21.1.3
-  - pixman=0.34.0
+  - pixman=0.40.0
   - pthread-stubs=0.4
   - py-opencv=3.4.2
+  - pyparsing=2.4.7
+  - pyqt=5.9.2
   - python=3.7.10
+  - python-dateutil=2.8.1
   - python_abi=3.7
   - pytorch=1.9.0
+  - pytz=2021.1
+  - qt=5.9.7
   - readline=8.1
   - scikit-learn=0.24.2
   - scipy=1.6.2
   - setuptools=52.0.0
+  - sip=4.19.8
   - six=1.16.0
   - sqlite=3.36.0
   - threadpoolctl=2.1.0
   - tk=8.6.10
   - torchaudio=0.9.0
   - torchvision=0.2.1
+  - tornado=6.1
+  - tqdm=4.61.2
   - typing_extensions=3.10.0.0
   - wheel=0.36.2
   - xorg-fixesproto=5.0
