@@ -8,6 +8,11 @@ from torch.utils.data import Dataset as BaseDataset
 
 from weakseg import DATA_DIR, DICT_COLOR_INDEX
 from weakseg.utils.utils_plot import visualize
+
+
+import logging
+logger = logging.getLogger(__name__)
+
 class Dataset(BaseDataset):
     """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
     
@@ -30,6 +35,7 @@ class Dataset(BaseDataset):
             self, 
             images_dir, 
             masks_dir, 
+            weakly_enabled=False, 
             augmentation=None, 
             preprocessing=None,
     ):
@@ -41,6 +47,8 @@ class Dataset(BaseDataset):
         self.images_fps = [os.path.join(images_dir, image_id) for image_id in self.ids]
 
         self.masks_fps = [os.path.join(masks_dir, image_id) for image_id in self.ids]
+
+        self.weakly_enabled = weakly_enabled
 
         self.class_values = self.DICT_COLOR_INDEX
         
@@ -60,6 +68,12 @@ class Dataset(BaseDataset):
         masks = [(np.all(original_mask == k, axis=-1)) for k in self.DICT_COLOR_INDEX]
         mask = np.stack(masks, axis=-1).astype('float')
         
+        # compute %px for each class
+        # e.g.          array([24916.,     0.,  1639.,     0., 13445.])
+        weak_label = mask.sum(axis=0).sum(axis=0)
+        if (self.weakly_enabled) and (self.augmentation):
+            logger.warning('am I sure that after augmentation every cls will appear correctly?!?')
+
         # apply augmentations
         if self.augmentation:
             sample = self.augmentation(image=image, mask=mask)
@@ -70,7 +84,7 @@ class Dataset(BaseDataset):
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample['image'], sample['mask']
             
-        return image, mask
+        return image, mask, weak_label
         
     def __len__(self):
         return len(self.images_fps)
@@ -85,11 +99,15 @@ if __name__ == '__main__':
     x_valid_dir = os.path.join(DATA_DIR, 'val_images')
     y_valid_dir = os.path.join(DATA_DIR, 'val_labels')
 
-    dataset = Dataset(x_train_dir, y_train_dir)
+    x_weak_dir = os.path.join(DATA_DIR, 'weak_images')
+    y_weak_dir = os.path.join(DATA_DIR, 'weak_labels')
+    weak_y_weak_dir = os.path.join(DATA_DIR, 'weak_clslabels')
 
-    image, mask = dataset[42] # get some sample
+    dataset = Dataset(x_weak_dir, y_weak_dir, weak_y_weak_dir)
 
-    print((image.shape, mask.shape))
+    image, mask, weak_label = dataset[42] # get some sample
+
+    print((image.shape, mask.shape, weak_label.shape))
 
     dict_images = {
         'image': image,
@@ -109,7 +127,7 @@ if __name__ == '__main__':
 
     # same image with different random transforms
     for i in range(3):
-        image, mask = augmented_dataset[i]
+        image, mask, weak_label = augmented_dataset[i]
 
         dict_images = {
             'image': image,
