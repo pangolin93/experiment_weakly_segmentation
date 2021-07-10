@@ -1,4 +1,5 @@
 import os
+from weakseg.ml.custom_augmentation import get_training_augmentation
 from weakseg.ml.transform_mask import from_multiclass_mask_to_rgb
 import cv2
 import numpy as np
@@ -95,3 +96,19 @@ if __name__ == '__main__':
         image=image.astype(int), 
         rgb_mask = from_multiclass_mask_to_rgb(mask).astype(int),
     )
+
+    #### Visualize resulted augmented images and masks
+
+    augmented_dataset = Dataset(
+        x_train_dir, 
+        y_train_dir, 
+        augmentation=get_training_augmentation(), 
+    )
+
+    # same image with different random transforms
+    for i in range(3):
+        image, mask = augmented_dataset[i]
+        visualize(
+            image=image, 
+            rgb_mask = from_multiclass_mask_to_rgb(mask).astype(int)
+        )
