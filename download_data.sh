@@ -1,6 +1,6 @@
 #!/bin/bash  
 
-FOLDER_DATA_RAW=datat_raw
+FOLDER_DATA_RAW=data_raw
 FOLDER_DATA_RAW_LABELS="${FOLDER_DATA_RAW}/labels/"
 FOLDER_DATA_RAW_DATA="${FOLDER_DATA_RAW}/images/"
 
