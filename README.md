@@ -10,9 +10,12 @@
     - CUDA Version: 11.4
 
 ## Download Data
-- be sure you have **zip** command available 
-    - `sudo apt install zip`
-
+- you will use Data from ISPRS (https://www2.isprs.org/commissions/comm2/wg4/benchmark/2d-sem-label-vaihingen/)
+    - be sure you have **zip** command available 
+        - `sudo apt install zip`
+- to download data
+    - check you are in the root folder
+    - execute `bash download_data.sh <your_username> <your_pwd>`
 ## Create Conda Env
 - `conda env create -f environment.yml || conda env update -f environment.yml`
 
