@@ -10,6 +10,7 @@ conda_env/
 # notebook checkpoints
 notebooks/.ipynb_checkpoints/
 
+
 # IDE
 .idea/
 .vscode/
@@ -34,6 +35,10 @@ data_raw/
 # Logs
 **/logs
 *.log
+
+# Others
+hidden
+
 
 # OS generated files
 .DS_Store
