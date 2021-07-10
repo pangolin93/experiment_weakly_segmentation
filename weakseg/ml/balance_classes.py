@@ -7,11 +7,17 @@ def make_weights_for_balanced_classes(masks, nclasses):
     count_classes = [0] * nclasses
 
     num_mask = len(masks)
+
+    # masks --> List[mask]
+    # mask.shape --> (5, 224, 224)
+
+    list_perc = []
     for mask in masks:
       # for each image i compute % for each class                                                         
       perc_classes_tmp = (
-          mask.sum(axis=0).sum(axis=0) / (mask.shape[0]*mask.shape[1])
+          mask.sum(axis=1).sum(axis=1) / (mask.shape[0]*mask.shape[1])
       )
+      list_perc.append(perc_classes_tmp)
 
       count_classes += perc_classes_tmp
 
@@ -23,14 +29,8 @@ def make_weights_for_balanced_classes(masks, nclasses):
     weight_classes = 1 / perc_classes
 
     weights = [0] * num_mask
-    for i in range(num_mask):
-      mask = masks[i]
-      # for each image i compute % for each class                                                         
-      perc_classes_tmp = (
-          mask.sum(axis=0).sum(axis=0) / (mask.shape[0]*mask.shape[1])
-      )
-
-      weights[i] = np.dot(perc_classes_tmp, weight_classes)
+    for i in range(num_mask):                                                     
+      weights[i] = np.dot(list_perc[i], weight_classes)
 
     return weights       
 
