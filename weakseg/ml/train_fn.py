@@ -11,6 +11,10 @@ from weakseg.ml.model_segmentation import get_segm_model_and_preprocess_fn
 from weakseg.ml.custom_augmentation import get_preprocessing, get_training_augmentation, get_validation_augmentation
 from weakseg import DATA_DIR
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 def train_fn():
 
     # https://github.com/qubvel/segmentation_models.pytorch/issues/265
