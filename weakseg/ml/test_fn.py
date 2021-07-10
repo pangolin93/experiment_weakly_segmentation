@@ -23,11 +23,6 @@ def test_fn(filepath_best_model='best_model.pth'):
     x_valid_dir = os.path.join(DATA_DIR, 'val_images')
     y_valid_dir = os.path.join(DATA_DIR, 'val_labels')
 
-
-    x_valid_dir = os.path.join(DATA_DIR, 'train_images')
-    y_valid_dir = os.path.join(DATA_DIR, 'train_labels')
-
-
     # create test dataset
     x_test_dir = x_valid_dir
     y_test_dir = y_valid_dir
