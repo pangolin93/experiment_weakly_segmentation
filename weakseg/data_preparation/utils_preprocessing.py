@@ -60,7 +60,7 @@ def elaborate_images(folder_data, dst_folder, indexes, funct_to_apply=None):
 
     crops_images = create_list_sub_img(list_images)
 
-    shutil.rmtree(dst_folder)
+    shutil.rmtree(dst_folder, ignore_errors=True)
 
     os.makedirs(dst_folder, exist_ok=True)
 
