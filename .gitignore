@@ -28,7 +28,8 @@ venv.bak/
 *.csv
 *.p
 
-data/output/supervised/
+data/
+data_raw/
 
 # Logs
 **/logs
