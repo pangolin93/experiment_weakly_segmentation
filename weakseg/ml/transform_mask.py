@@ -4,7 +4,7 @@ from weakseg import DICT_INDEX_COLOR
 import logging
 logger = logging.getLogger(__name__)
 
-def from_multiclass_mask_to_rgb(mask, classes):
+def from_multiclass_mask_to_rgb(mask):
     # mask.shape = (width, heigth, n_classes) --> (224, 224, 5)
     
     rgb_image = np.zeros((mask.shape[0], mask.shape[1], 3))     
