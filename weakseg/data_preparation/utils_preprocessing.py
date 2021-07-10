@@ -71,25 +71,3 @@ def elaborate_images(folder_data, dst_folder, indexes, funct_to_apply=None):
 
     return crops_images
 
-def _unique_void_view(a):
-        # https://stackoverflow.com/questions/16970982/find-unique-rows-in-numpy-array
-        return (
-                np.unique(a.view(np.dtype((np.void, a.dtype.itemsize * a.shape[1]))))
-                .view(a.dtype)
-                .reshape(-1, a.shape[1])
-        )
-        
-def elaborate_single_crop(x):
-    
-    x = x.reshape((-1, 3))
-
-    list_color = _unique_void_view(x)
-
-    list_cls = [0] * len(DICT_COLOR_CLS.keys())
-
-    for c in list_color:
-        c = tuple(c)
-        i = DICT_COLOR_CLS[c]
-        list_cls[i] = 1
-    
-    return list_cls
