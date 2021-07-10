@@ -1,8 +1,10 @@
 import os
+from weakseg.ml.weakly.image_classifier import ImageClassifier
 
 import torch
 from weakseg.ml.balance_classes import get_balancer
 from torch.utils.data import DataLoader
+from torch.nn import CrossEntropyLoss
 from tqdm import tqdm
 import segmentation_models_pytorch as smp
 
@@ -44,15 +46,17 @@ def train_fn(filepath_best_model='best_model.pth'):
     )
 
     list_mask = [train_dataset[i][1] for i in tqdm(range(train_dataset.num_images))]
-    weighted_sampler = get_balancer(list_mask)
+    weighted_sampler, avg_perc_classes = get_balancer(list_mask)
 
-    train_loader = DataLoader(train_dataset, batch_size=32*2, num_workers=2, sampler=weighted_sampler)
-    valid_loader = DataLoader(valid_dataset, batch_size=16*2, shuffle=False, num_workers=2)
+    train_loader = DataLoader(train_dataset, batch_size=8*2, num_workers=2, sampler=weighted_sampler)
+    valid_loader = DataLoader(valid_dataset, batch_size=8*2, shuffle=False, num_workers=2)
 
     # Dice/F1 score - https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
     # IoU/Jaccard score - https://en.wikipedia.org/wiki/Jaccard_index
 
-    loss = smp.utils.losses.DiceLoss()
+    fn_loss_strong = smp.utils.losses.DiceLoss()
+
+    fn_loss_weak = CrossEntropyLoss(weight=torch.from_numpy(1/avg_perc_classes))
 
     metrics = [
         smp.utils.metrics.IoU(threshold=0.5),
@@ -65,6 +69,40 @@ def train_fn(filepath_best_model='best_model.pth'):
     ])
 
     DEVICE = 'cuda'
+    model = model.to(DEVICE)
+
+    model_weak = ImageClassifier()
+    model_weak = model_weak.to(DEVICE)
+
+    max_score = 0
+    for i in range(0, 15):
+        # Training
+
+        logger.info(f'epoch {i}')
+
+        for i, data in enumerate(train_loader):
+
+            model.train()
+            
+            # model_weak.train()
+
+            image, mask, weak_label = data
+
+            image = image.to(DEVICE)
+            mask = mask.to(DEVICE)
+            weak_label = weak_label.to(DEVICE)
+
+            optimizer.zero_grad()
+            pred_strong = model(image)
+            loss_strong = 0
+            loss_weak = 0
+
+            loss_strong = fn_loss_strong.forward(pred_strong, mask)
+            loss_weak = 0 # fn_loss_weak.forward(pred_strong, mask)
+
+            loss = loss_strong + loss_weak
+            loss.backward()
+            optimizer.step()
 
     # create epoch runners 
     # it is a simple loop of iterating over dataloader`s samples
@@ -77,27 +115,19 @@ def train_fn(filepath_best_model='best_model.pth'):
         verbose=True,
     )
 
-    valid_epoch = smp.utils.train.ValidEpoch(
-        model, 
-        loss=loss, 
-        metrics=metrics, 
-        device=DEVICE,
-        verbose=True,
-    )
 
-
-    max_score = 0
-    for i in range(0, 15):
+    # max_score = 0
+    # for i in range(0, 15):
         
-        print('\nEpoch: {}'.format(i))
-        train_logs = train_epoch.run(train_loader)
-        valid_logs = valid_epoch.run(valid_loader)
+    #     print('\nEpoch: {}'.format(i))
+    #     train_logs = train_epoch.run(train_loader)
+    #     valid_logs = valid_epoch.run(valid_loader)
         
-        # do something (save model, change lr, etc.)
-        if max_score < valid_logs['fscore']:
-            max_score = valid_logs['fscore']
-            torch.save(model, filepath_best_model)
-            print('Model saved!')
+    #     # do something (save model, change lr, etc.)
+    #     if max_score < valid_logs['fscore']:
+    #         max_score = valid_logs['fscore']
+    #         torch.save(model, filepath_best_model)
+    #         print('Model saved!')
             
     return
 
