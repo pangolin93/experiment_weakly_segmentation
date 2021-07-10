@@ -32,7 +32,7 @@ def make_weights_for_balanced_classes(masks, nclasses):
     for i in range(num_mask):                                                     
       weights[i] = np.dot(list_perc[i], weight_classes)
 
-    return weights       
+    return weights, perc_classes    
 
 def get_balancer(list_mask, nclasses=5):
 
@@ -40,7 +40,7 @@ def get_balancer(list_mask, nclasses=5):
 
     nclasses=5
     num_samples = len(list_mask)
-    weights = make_weights_for_balanced_classes(list_mask, nclasses=nclasses)
+    weights, perc_classes = make_weights_for_balanced_classes(list_mask, nclasses=nclasses)
     weighted_sampler = WeightedRandomSampler(weights, num_samples, replacement=True, generator=None)
 
-    return weighted_sampler
+    return weighted_sampler, perc_classes
