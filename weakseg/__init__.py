@@ -21,8 +21,8 @@ DICT_COLOR_INDEX = {
 # now i am swapping keys and values
 DICT_INDEX_COLOR = {v: k for k, v in DICT_COLOR_INDEX.items()}
 
-DEVICE = 'CUDA'
+DEVICE = 'cuda'
 
 RANDOM_STATE = 21
 
-init_logger(log_dir=LOGS_LOCATION, log_level_file=logging.DEBUG, log_level_stream=logging.WARNING)
+init_logger(log_dir=LOGS_LOCATION, log_level_file=logging.INFO, log_level_stream=logging.WARNING)

@@ -4,6 +4,10 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 def visualize(images: Dict[str, np.ndarray], save_flag=False, filepath_fig='img.png'):
     """Plot images in one row."""
     n = len(images)
@@ -17,4 +21,5 @@ def visualize(images: Dict[str, np.ndarray], save_flag=False, filepath_fig='img.
     plt.show()
 
     if save_flag:
+        logger.info(f'saving figure in {filepath_fig}')
         plt.savefig(filepath_fig)
