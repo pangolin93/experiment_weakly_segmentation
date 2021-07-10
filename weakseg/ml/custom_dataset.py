@@ -92,9 +92,12 @@ if __name__ == '__main__':
 
     print((image.shape, mask.shape))
 
+    dict_images = {
+        'image': image,
+        'rgb_mask': from_multiclass_mask_to_rgb(mask).astype(int)
+    }
     visualize(
-        image=image.astype(int), 
-        rgb_mask = from_multiclass_mask_to_rgb(mask).astype(int),
+        images=dict_images, 
     )
 
     #### Visualize resulted augmented images and masks
@@ -108,7 +111,12 @@ if __name__ == '__main__':
     # same image with different random transforms
     for i in range(3):
         image, mask = augmented_dataset[i]
+
+        dict_images = {
+            'image': image,
+            'rgb_mask': from_multiclass_mask_to_rgb(mask).astype(int)
+        }
         visualize(
-            image=image, 
-            rgb_mask = from_multiclass_mask_to_rgb(mask).astype(int)
+            images=dict_images, 
+            save_flag=True
         )
