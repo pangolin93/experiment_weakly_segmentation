@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 from tqdm.contrib.concurrent import process_map  # or thread_map
-from weakseg import DICT_COLOR_CLS
+from weakseg import DICT_COLOR_INDEX
 
 
 import logging
@@ -23,11 +23,11 @@ def elaborate_single_crop(x):
 
     list_color = _unique_void_view(x)
 
-    list_cls = [0] * len(DICT_COLOR_CLS.keys())
+    list_cls = [0] * len(DICT_COLOR_INDEX.keys())
 
     for c in list_color:
         c = tuple(c)
-        i = DICT_COLOR_CLS[c]
+        i = DICT_COLOR_INDEX[c]
         list_cls[i] = 1
     
     return list_cls

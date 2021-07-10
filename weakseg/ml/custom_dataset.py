@@ -5,7 +5,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 
-from weakseg import DATA_DIR, DICT_COLOR_CLS
+from weakseg import DATA_DIR, DICT_COLOR_INDEX
 
 class Dataset(BaseDataset):
     """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
@@ -23,7 +23,7 @@ class Dataset(BaseDataset):
 
     # NOTE: opencv opens BFR by default!
     
-    DICT_COLOR_CLS = DICT_COLOR_CLS
+    DICT_COLOR_INDEX = DICT_COLOR_INDEX
 
     def __init__(
             self, 
@@ -41,7 +41,7 @@ class Dataset(BaseDataset):
 
         self.masks_fps = [os.path.join(masks_dir, image_id) for image_id in self.ids]
 
-        self.class_values = self.DICT_COLOR_CLS
+        self.class_values = self.DICT_COLOR_INDEX
         
         self.augmentation = augmentation
         self.preprocessing = preprocessing
@@ -56,7 +56,7 @@ class Dataset(BaseDataset):
         original_mask = cv2.cvtColor(original_mask, cv2.COLOR_BGR2RGB)
 
         # extract certain classes from mask
-        masks = [(np.all(original_mask == k, axis=-1)) for k in self.DICT_COLOR_CLS]
+        masks = [(np.all(original_mask == k, axis=-1)) for k in self.DICT_COLOR_INDEX]
         mask = np.stack(masks, axis=-1).astype('float')
         
         # apply augmentations

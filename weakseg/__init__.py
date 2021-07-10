@@ -10,13 +10,17 @@ LOGS_LOCATION = os.path.join(os.path.dirname(PACKAGE_DIR), 'logs')
 # mapping with colors i wanna consider
 # no red here
 # NOTE: colors are in BGR!
-DICT_COLOR_CLS = {
+DICT_COLOR_INDEX = {
     (255, 255, 255):  0,
     (255,   0,   0):  1,
     (255, 255,   0):  2,
     (0, 255,   0):    3,
     (0, 255, 255):    4,
 } 
+
+# now i am swapping keys and values
+DICT_INDEX_COLOR = {v: k for k, v in DICT_COLOR_INDEX.items()}
+
 
 RANDOM_STATE = 21
 

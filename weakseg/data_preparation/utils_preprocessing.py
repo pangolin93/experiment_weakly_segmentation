@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from weakseg import DICT_COLOR_CLS
+from weakseg import DICT_COLOR_INDEX
 
 def sliding_window(image, stepSize, windowSize):
     for y in range(0, image.shape[0], stepSize):
