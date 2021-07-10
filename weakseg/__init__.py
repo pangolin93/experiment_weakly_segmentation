@@ -18,5 +18,6 @@ DICT_COLOR_CLS = {
     (0, 255, 255):    4,
 } 
 
+RANDOM_STATE = 21
 
 init_logger(log_dir=LOGS_LOCATION, log_level_file=logging.DEBUG, log_level_stream=logging.WARNING)
