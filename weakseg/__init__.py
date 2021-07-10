@@ -19,4 +19,4 @@ DICT_COLOR_CLS = {
 } 
 
 
-init_logger(log_dir=LOGS_LOCATION, log_level_file=logging.INFO, log_level_stream=logging.WARNING)
+init_logger(log_dir=LOGS_LOCATION, log_level_file=logging.DEBUG, log_level_stream=logging.WARNING)
