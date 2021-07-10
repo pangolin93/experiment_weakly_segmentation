@@ -18,8 +18,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def test_fn():
-
+def test_fn(filepath_best_model='best_model.pth'):
     
     x_valid_dir = os.path.join(DATA_DIR, 'val_images')
     y_valid_dir = os.path.join(DATA_DIR, 'val_labels')
@@ -36,7 +35,7 @@ def test_fn():
     _, preprocessing_fn = get_segm_model_and_preprocess_fn()
     
     # load best saved checkpoint
-    best_model = torch.load('./best_model.pth')
+    best_model = torch.load(filepath_best_model)
 
     test_dataset = Dataset(
         x_test_dir, 

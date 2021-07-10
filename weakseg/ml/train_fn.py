@@ -15,7 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def train_fn():
+def train_fn(filepath_best_model='best_model.pth'):
 
     # https://github.com/qubvel/segmentation_models.pytorch/issues/265
     img_size = 224
@@ -46,8 +46,8 @@ def train_fn():
     list_mask = [train_dataset[i][1] for i in tqdm(range(train_dataset.num_images))]
     weighted_sampler = get_balancer(list_mask)
 
-    train_loader = DataLoader(train_dataset, batch_size=16*2, num_workers=2, sampler=weighted_sampler)
-    valid_loader = DataLoader(valid_dataset, batch_size=8*2, shuffle=False, num_workers=2)
+    train_loader = DataLoader(train_dataset, batch_size=32*2, num_workers=2, sampler=weighted_sampler)
+    valid_loader = DataLoader(valid_dataset, batch_size=16*2, shuffle=False, num_workers=2)
 
     # Dice/F1 score - https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
     # IoU/Jaccard score - https://en.wikipedia.org/wiki/Jaccard_index
@@ -87,7 +87,7 @@ def train_fn():
 
 
     max_score = 0
-    for i in range(0, 5):
+    for i in range(0, 15):
         
         print('\nEpoch: {}'.format(i))
         train_logs = train_epoch.run(train_loader)
@@ -96,13 +96,9 @@ def train_fn():
         # do something (save model, change lr, etc.)
         if max_score < valid_logs['fscore']:
             max_score = valid_logs['fscore']
-            torch.save(model, './best_model.pth')
+            torch.save(model, filepath_best_model)
             print('Model saved!')
             
-
-    # load best saved checkpoint
-    best_model = torch.load('./best_model.pth')
-
     return
 
 if __name__ == '__main__':

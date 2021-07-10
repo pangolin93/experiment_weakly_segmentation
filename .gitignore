@@ -32,6 +32,9 @@ venv.bak/
 data/
 data_raw/
 
+# weights
+*.pth
+
 # Logs
 **/logs
 *.log
