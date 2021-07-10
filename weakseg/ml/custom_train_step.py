@@ -1,13 +1,12 @@
 import sys
 import torch
 from tqdm import tqdm as tqdm
-import segmentation_models_pytorch as smp
-from smp.utils.meter import AverageValueMeter
+from segmentation_models_pytorch.utils.meter import AverageValueMeter
 
 
 class Epoch:
 
-    def __init__(self, model_strong, model_weak, loss_strong, loss_weak, metrics_strong, metrics_weak, stage_name, device='cpu', verbose=True, enable_weak=False):
+    def __init__(self, model_strong, model_weak, loss_strong, loss_weak, metrics_strong, metrics_weak, stage_name, device='cpu', enable_weak=False, verbose=True):
         self.model_strong = model_strong
         self.model_weak = model_weak
         
@@ -93,13 +92,17 @@ class Epoch:
 
 class TrainEpoch(Epoch):
 
-    def __init__(self, model, loss, metrics, optimizer, device='cpu', verbose=True):
+    def __init__(self, model, loss_strong, loss_weak, metrics_strong, metrics_weak, optimizer, device='cpu', enable_weak=False, verbose=True):
         super().__init__(
             model=model,
-            loss=loss,
-            metrics=metrics,
+            loss_strong=loss_strong,
+            loss_weak=loss_weak,
+            metrics_strong=metrics_strong,
+            metrics_weak=metrics_weak,
+            
             stage_name='train',
             device=device,
+            enable_weak=enable_weak,
             verbose=verbose,
         )
         self.optimizer = optimizer
@@ -107,32 +110,48 @@ class TrainEpoch(Epoch):
     def on_epoch_start(self):
         self.model.train()
 
-    def batch_update(self, x, y):
+    def batch_update(self, x, y, y_weak):
         self.optimizer.zero_grad()
-        prediction = self.model.forward(x)
-        loss = self.loss(prediction, y)
+
+        prediction_strong = self.model_strong.forward(x)
+        loss_strong = self.loss_strong(prediction_strong, y)
+
+        # prediction_strong.shape --> (5, 224, 224)
+        
+        if self.enable_weak:
+            x_weak = torch.sum(prediction_strong, dim=1)  # (5, 224)
+            count_px_classes = torch.sum(x_weak, dim=1)  # (5,)
+            prediction_weak = torch.div(count_px_classes, 224*224) # i have percentages now
+            loss_weak = self.loss_weak(prediction_weak, y_weak)
+        else:
+            loss_weak = 0
+
+        loss = loss_strong + loss_weak
         loss.backward()
         self.optimizer.step()
-        return loss, prediction
+        return loss_strong, prediction_strong
 
 
 class ValidEpoch(Epoch):
 
-    def __init__(self, model, loss, metrics, device='cpu', verbose=True):
+    def __init__(self, model, loss_strong, loss_weak, metrics_strong, metrics_weak, device='cpu', enable_weak=False, verbose=True):
         super().__init__(
             model=model,
-            loss=loss,
-            metrics=metrics,
+            loss_strong=loss_strong,
+            loss_weak=loss_weak,
+            metrics_strong=metrics_strong,
+            metrics_weak=metrics_weak,
             stage_name='valid',
             device=device,
+            enable_weak=enable_weak,
             verbose=verbose,
         )
 
     def on_epoch_start(self):
         self.model.eval()
 
-    def batch_update(self, x, y):
+    def batch_update(self, x, y, y_weak):
         with torch.no_grad():
-            prediction = self.model.forward(x)
-            loss = self.loss(prediction, y)
-        return loss, prediction
+            prediction_strong = self.model.forward(x)
+            loss_strong = self.loss(prediction_strong, y)
+        return loss_strong, prediction_strong
