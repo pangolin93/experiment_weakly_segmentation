@@ -13,7 +13,7 @@ from weakseg.ml.custom_augmentation import get_preprocessing, get_validation_aug
 from weakseg import DATA_DIR, DEVICE
 from weakseg.ml.custom_dataset import Dataset
 from weakseg.utils.utils_plot import visualize
-from weakseg.ml.transform_mask import from_multiclass_mask_to_rgb
+from weakseg.ml.transform_mask import from_multiclass_mask_to_bgr
 
 import logging
 logger = logging.getLogger(__name__)
@@ -23,6 +23,9 @@ def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
     
     x_valid_dir = os.path.join(DATA_DIR, 'val_images')
     y_valid_dir = os.path.join(DATA_DIR, 'val_labels')
+
+    x_train_dir = os.path.join(DATA_DIR, 'train_images')
+    y_train_dir = os.path.join(DATA_DIR, 'train_labels')
 
     # create test dataset
     x_test_dir = x_valid_dir
@@ -34,8 +37,8 @@ def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
     best_model = torch.load(filepath_best_model)
 
     test_dataset = Dataset(
-        x_test_dir, 
-        y_test_dir, 
+        x_train_dir, 
+        y_train_dir, 
         augmentation=None, 
         preprocessing=get_preprocessing(preprocessing_fn)
     )
@@ -78,7 +81,7 @@ def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
     for i in range(5):
         n = np.random.choice(len(test_dataset))
         
-        image, gt_mask, y_weak = test_dataset[n]
+        image, gt_mask, y_weak = test_dataset[i]
         
         gt_mask = gt_mask.squeeze()
         
@@ -88,8 +91,8 @@ def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
         
         dict_images = {
             'image': image.transpose(2, 1, 0), # (3, 224, 224) --> (224, 224, 3)
-            'gt_rgb': from_multiclass_mask_to_rgb(gt_mask.transpose(2, 1, 0)).astype(int),
-            'rgb_mask': from_multiclass_mask_to_rgb(pr_mask.transpose(2, 1, 0)).astype(int)
+            'gt_rgb': from_multiclass_mask_to_bgr(gt_mask),
+            'rgb_mask': from_multiclass_mask_to_bgr(pr_mask)
         }
 
         os.makedirs(folder_plot, exist_ok=True)

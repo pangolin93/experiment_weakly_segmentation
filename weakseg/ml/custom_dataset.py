@@ -1,6 +1,6 @@
 import os
 from weakseg.ml.custom_augmentation import get_training_augmentation_strong
-from weakseg.ml.transform_mask import from_multiclass_mask_to_rgb
+from weakseg.ml.transform_mask import from_multiclass_mask_to_bgr
 import cv2
 import numpy as np
 
@@ -61,8 +61,9 @@ class Dataset(BaseDataset):
         image = cv2.imread(str(self.images_fps[i]))
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+        # BGR channels!!!
+        # i need BGR beacuse of the values in DICT_INDEX_COLOR
         original_mask = cv2.imread(str(self.masks_fps[i]))
-        original_mask = cv2.cvtColor(original_mask, cv2.COLOR_BGR2RGB)
 
         # extract certain classes from mask
         masks = [(np.all(original_mask == k, axis=-1)) for k in self.DICT_COLOR_INDEX]
@@ -102,35 +103,40 @@ if __name__ == '__main__':
 
     dataset = Dataset(x_weak_dir, y_weak_dir, weak_y_weak_dir)
 
-    image, mask, weak_label = dataset[42] # get some sample
 
-    print((image.shape, mask.shape, weak_label.shape))
+    for i in range(5):
+        image, mask, weak_label = dataset[i] # get some sample
 
-    dict_images = {
-        'image': image,
-        'rgb_mask': from_multiclass_mask_to_rgb(mask).astype(int)
-    }
-    visualize(
-        images=dict_images, 
-    )
-
-    #### Visualize resulted augmented images and masks
-
-    augmented_dataset = Dataset(
-        x_train_dir, 
-        y_train_dir, 
-        augmentation=get_training_augmentation_strong(), 
-    )
-
-    # same image with different random transforms
-    for i in range(3):
-        image, mask, weak_label = augmented_dataset[i]
+        print((image.shape, mask.shape, weak_label.shape))
 
         dict_images = {
             'image': image,
-            'rgb_mask': from_multiclass_mask_to_rgb(mask).astype(int)
+            'rgb_mask': from_multiclass_mask_to_bgr(mask).astype(int)
         }
         visualize(
             images=dict_images, 
-            save_flag=True
+            save_flag=True,
+            filepath_fig=f'aaa_{i}.png'
         )
+
+    # #### Visualize resulted augmented images and masks
+
+    # augmented_dataset = Dataset(
+    #     x_train_dir, 
+    #     y_train_dir, 
+    #     augmentation=get_training_augmentation_strong(), 
+    # )
+
+    # # same image with different random transforms
+    # for i in range(3):
+    #     image, mask, weak_label = augmented_dataset[i]
+
+    #     dict_images = {
+    #         'image': image,
+    #         'rgb_mask': from_multiclass_mask_to_bgr(mask).astype(int)
+    #     }
+    #     visualize(
+    #         images=dict_images, 
+    #         save_flag=True,
+    #         filepath_fig=f'aaa_{i}.png'
+    #     )
