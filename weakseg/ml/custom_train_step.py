@@ -61,22 +61,33 @@ class Epoch:
                 loss_strong, loss_weak, y_pred_strong, y_pred_weak = self.batch_update(x, y, y_weak)
 
                 # update loss logs
-                loss_strong_values = loss_strong.cpu().detach().numpy()
-                loss_meter.add(loss_strong_values)
-
-                loss_logs = {self.loss_strong.__name__: loss_meter.mean}
+                if self.enable_weak:
+                    loss_strong_values = None
+                    loss_weak_values = loss_weak.cpu().detach().numpy()
+                    loss_values = loss_weak_values
+                else:
+                    loss_strong_values = loss_strong.cpu().detach().numpy()
+                    loss_weak_values = None
+                    loss_values = loss_strong_values
+                
+                loss_meter.add(loss_values)
+                if self.enable_weak:
+                    loss_logs = {str(self.loss_weak): loss_meter.mean}
+                else:
+                    loss_logs = {self.loss_strong.__name__: loss_meter.mean}
+    
                 logs.update(loss_logs)
 
                 # TODO: track loss weak?!?
 
                 # update metrics logs
-                for metric_fn in self.metrics_strong:
-                    metric_value = metric_fn(y_pred_strong, y).cpu().detach().numpy()
-                    metrics_meters[metric_fn.__name__].add(metric_value)
-
                 if self.enable_weak:
                     for metric_fn in self.metrics_weak:
                         metric_value = metric_fn(y_pred_weak, y_weak).cpu().detach().numpy()
+                        metrics_meters[metric_fn.__name__].add(metric_value)
+                else:
+                    for metric_fn in self.metrics_strong:
+                        metric_value = metric_fn(y_pred_strong, y).cpu().detach().numpy()
                         metrics_meters[metric_fn.__name__].add(metric_value)
 
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
@@ -113,8 +124,6 @@ class WeaklyTrainEpoch(Epoch):
         self.optimizer.zero_grad()
 
         prediction_strong = self.model.forward(x)
-        loss_strong = self.loss_strong(prediction_strong, y)
-
         # prediction_strong.shape --> (BS, 5, 224, 224)
         
         if self.enable_weak:
@@ -122,7 +131,11 @@ class WeaklyTrainEpoch(Epoch):
             count_px_classes = torch.sum(x_weak, dim=2)  # (BS, 5,)
             prediction_weak = torch.div(count_px_classes, 224*224) # i have percentages now
             loss_weak = self.loss_weak(prediction_weak.float(), y_weak.float())
+            loss_strong = 0
+            prediction_strong = None
         else:
+            loss_strong = self.loss_strong(prediction_strong, y)
+
             prediction_weak = None
             loss_weak = 0
         

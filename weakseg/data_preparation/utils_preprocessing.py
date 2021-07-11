@@ -29,7 +29,7 @@ def remove_red(img):
 
     return img
 
-def create_list_sub_img(images, stepSize=100, windowSize=200):
+def create_list_sub_img(images, stepSize=100, windowSize=224):
 
     # https://stackoverflow.com/questions/61051120/sliding-window-on-a-python-image
     def sliding_window(image, stepSize, windowSize):
