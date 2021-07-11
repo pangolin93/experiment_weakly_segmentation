@@ -69,6 +69,13 @@ def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
 
     logs = test_epoch.run(test_dataloader)
 
+
+    logger.info(f'model loaded from {filepath_best_model}')
+    logger.info(f'logs: {logs}')
+
+    print(f'model loaded from {filepath_best_model}')
+    print(f'logs: {logs}')
+
     n = np.random.choice(len(test_dataset))
         
     image, gt_mask, y_weak = test_dataset[n]
@@ -107,6 +114,8 @@ def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
 
 if __name__ == '__main__':
 
-    test_fn(filepath_best_model='best_model.pth', folder_plot='tmp')
+    test_fn(filepath_best_model='only_strong_model.pth', folder_plot='results_only_strong')
 
-    test_fn(filepath_best_model='best_model_weak.pth', folder_plot='tmp_weak')
+    test_fn(filepath_best_model='only_weak_model.pth', folder_plot='results_only_weak')
+
+    test_fn(filepath_best_model='weak_and_strong_model.pth', folder_plot='results_weak_strong')
