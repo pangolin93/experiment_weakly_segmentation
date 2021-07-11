@@ -36,6 +36,18 @@ Weak training steps:
 - Take predicted output and compute the percentage of pixels in frame for each class, creating the prediction for weak label
 - Compare weak prediction with weak label using loss and metrics from classification problem
 
+# TODO
+- Use more complex models and algorithms to exploit or extract weak labels.
+    - https://github.com/jiwoon-ahn/irn
+    - https://github.com/MECLabTUDA/M3d-Cam
+- Refactor code
+- Resolve Bugs in logs
+    - during weak training only show sensible loss and metrics (likewise for strong training)
+- Use more complex segmentation models
+    - I stick with a very simple FPN just beacuse I dont have so much time and computational power to use other architectures
+- Try use bound box as weak labels
+- Hypertuning
+
 ## Requirements
 - Linux (tested on Ubuntu 20.04 using WSL2)
 - conda installed
