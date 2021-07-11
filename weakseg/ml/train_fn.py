@@ -17,7 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model='best_model.pth'):
+def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model='best_model.pth', use_weak=True):
 
     # https://github.com/qubvel/segmentation_models.pytorch/issues/265
     img_size = 224
@@ -112,29 +112,31 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
     #################################################################################################
     # ONLY WEAKLY SUPERVISED
 
-    logger.info('#' * 30)
-    logger.info('ONLY WEAK SUPERVISED')
-    logger.info('#' * 30)
+    max_score_weak = max_score = 0
+    if use_weak:
+        logger.info('#' * 30)
+        logger.info('ONLY WEAK SUPERVISED')
+        logger.info('#' * 30)
 
-    max_score = 0
-    for i in range(0, 20):
-        
-        logger.info('\nEpoch: {}'.format(i))
-        train_logs = train_weak_epoch.run(weak_loader)
-        valid_logs = valid_epoch.run(valid_loader)
-        
-        logger.info(train_logs)
-        logger.info(valid_logs)
+        max_score = 0
+        for i in range(0, 20):
+            
+            logger.info('\nEpoch: {}'.format(i))
+            train_logs = train_weak_epoch.run(weak_loader)
+            valid_logs = valid_epoch.run(valid_loader)
+            
+            logger.info(train_logs)
+            logger.info(valid_logs)
 
-        # do something (save model, change lr, etc.)
-        if max_score < valid_logs['fscore']:
-            max_score = valid_logs['fscore']
-            torch.save(model, filepath_best_model_weak)
-            logger.info(f'Model saved at {filepath_best_model_weak}')
+            # do something (save model, change lr, etc.)
+            if max_score < valid_logs['fscore']:
+                max_score = valid_logs['fscore']
+                torch.save(model, filepath_best_model_weak)
+                logger.info(f'Model saved at {filepath_best_model_weak}')
 
-    logger.info(f'after weak, metric validation fscore = {max_score}')
+        logger.info(f'after weak, metric validation fscore = {max_score}')
 
-    max_score_weak = max_score 
+        max_score_weak = max_score 
 
     #################################################################################################
     # ONLY STRONG SUPERVISED
@@ -176,5 +178,10 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
 
 if __name__ == '__main__':
 
-    train_fn()
+    logger.info('train with only strong labels')
+    train_fn(use_weak=False, filepath_best_model='only_strong_model.pth')
+    
+    logger.info('train with weak and strong labels')
+    train_fn(use_weak=True, filepath_best_model='weak_and_strong_model.pth')
+
 
