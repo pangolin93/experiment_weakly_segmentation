@@ -13,7 +13,7 @@ from weakseg.ml.custom_augmentation import get_preprocessing, get_validation_aug
 from weakseg import DATA_DIR, DEVICE
 from weakseg.ml.custom_dataset import Dataset
 from weakseg.utils.utils_plot import visualize
-from weakseg.ml.transform_mask import from_multiclass_mask_to_bgr
+from weakseg.ml.transform_mask import from_multiclass_mask_to_bgr, from_multiclass_mask_to_rgb
 
 import logging
 logger = logging.getLogger(__name__)
@@ -88,11 +88,11 @@ def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
         x_tensor = torch.from_numpy(image).to(DEVICE).unsqueeze(0)
         pr_mask = best_model.predict(x_tensor)
         pr_mask = (pr_mask.squeeze().cpu().numpy().round())
-        
+
         dict_images = {
             'image': image.transpose(2, 1, 0), # (3, 224, 224) --> (224, 224, 3)
-            'gt_rgb': from_multiclass_mask_to_bgr(gt_mask),
-            'rgb_mask': from_multiclass_mask_to_bgr(pr_mask)
+            'gt_rgb': from_multiclass_mask_to_rgb(gt_mask.transpose(2, 1, 0)),
+            'rgb_mask': from_multiclass_mask_to_rgb(pr_mask.transpose(2, 1, 0))
         }
 
         os.makedirs(folder_plot, exist_ok=True)
