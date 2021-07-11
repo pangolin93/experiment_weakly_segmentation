@@ -18,7 +18,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def train_fn(filepath_best_model='best_model.pth'):
+def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model='best_model.pth'):
 
     # https://github.com/qubvel/segmentation_models.pytorch/issues/265
     img_size = 224
@@ -117,7 +117,7 @@ def train_fn(filepath_best_model='best_model.pth'):
     # ONLY WEAKLY SUPERVISED
 
     max_score = 0
-    for i in range(0, 5):
+    for i in range(0, 20):
         
         print('\nEpoch: {}'.format(i))
         train_logs = train_weak_epoch.run(weak_loader)
@@ -126,7 +126,7 @@ def train_fn(filepath_best_model='best_model.pth'):
         # do something (save model, change lr, etc.)
         if max_score < valid_logs['fscore']:
             max_score = valid_logs['fscore']
-            torch.save(model, filepath_best_model)
+            torch.save(model, filepath_best_model_weak)
             print('Model saved!')
 
     #################################################################################################
@@ -144,7 +144,7 @@ def train_fn(filepath_best_model='best_model.pth'):
     )
 
     max_score = 0
-    for i in range(0, 5):
+    for i in range(0, 20):
         
         print('\nEpoch: {}'.format(i))
         train_logs = train_strong_epoch.run(train_loader)
