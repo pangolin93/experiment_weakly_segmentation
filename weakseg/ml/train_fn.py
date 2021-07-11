@@ -1,4 +1,5 @@
 import os
+from weakseg.ml.custom_train_step import WeaklyTrainEpoch, WeaklyValidEpoch
 from weakseg.ml.weakly.image_classifier import ImageClassifier
 
 import torch
@@ -58,9 +59,13 @@ def train_fn(filepath_best_model='best_model.pth'):
 
     fn_loss_weak = CrossEntropyLoss(weight=torch.from_numpy(1/avg_perc_classes))
 
-    metrics = [
+    metrics_strong = [
         smp.utils.metrics.IoU(threshold=0.5),
         smp.utils.metrics.Fscore(),
+        smp.utils.metrics.Accuracy(), 
+    ]
+
+    metrics_weak = [
         smp.utils.metrics.Accuracy(), 
     ]
 
@@ -74,60 +79,44 @@ def train_fn(filepath_best_model='best_model.pth'):
     model_weak = ImageClassifier()
     model_weak = model_weak.to(DEVICE)
 
-    max_score = 0
-    for i in range(0, 15):
-        # Training
 
-        logger.info(f'epoch {i}')
-
-        for i, data in enumerate(train_loader):
-
-            model.train()
-            
-            # model_weak.train()
-
-            image, mask, weak_label = data
-
-            image = image.to(DEVICE)
-            mask = mask.to(DEVICE)
-            weak_label = weak_label.to(DEVICE)
-
-            optimizer.zero_grad()
-            pred_strong = model(image)
-            loss_strong = 0
-            loss_weak = 0
-
-            loss_strong = fn_loss_strong.forward(pred_strong, mask)
-            loss_weak = 0 # fn_loss_weak.forward(pred_strong, mask)
-
-            loss = loss_strong + loss_weak
-            loss.backward()
-            optimizer.step()
-
+    smp.utils.train.TrainEpoch
+    
     # create epoch runners 
     # it is a simple loop of iterating over dataloader`s samples
-    train_epoch = smp.utils.train.TrainEpoch(
-        model, 
-        loss=loss, 
-        metrics=metrics, 
-        optimizer=optimizer,
-        device=DEVICE,
-        verbose=True,
+    train_epoch = WeaklyTrainEpoch(
+        model=model, 
+        loss_strong=fn_loss_strong, 
+        loss_weak=fn_loss_weak, 
+        metrics_strong=metrics_strong, 
+        metrics_weak=metrics_weak, 
+        optimizer=optimizer, 
+        device=DEVICE, 
+        enable_weak=False, 
     )
 
+    valid_epoch = WeaklyValidEpoch(
+        model=model, 
+        loss_strong=fn_loss_strong, 
+        loss_weak=fn_loss_weak, 
+        metrics_strong=metrics_strong, 
+        metrics_weak=metrics_weak, 
+        device=DEVICE, 
+        enable_weak=False, 
+    )
 
-    # max_score = 0
-    # for i in range(0, 15):
+    max_score = 0
+    for i in range(0, 15):
         
-    #     print('\nEpoch: {}'.format(i))
-    #     train_logs = train_epoch.run(train_loader)
-    #     valid_logs = valid_epoch.run(valid_loader)
+        print('\nEpoch: {}'.format(i))
+        train_logs = train_epoch.run(train_loader)
+        valid_logs = valid_epoch.run(valid_loader)
         
-    #     # do something (save model, change lr, etc.)
-    #     if max_score < valid_logs['fscore']:
-    #         max_score = valid_logs['fscore']
-    #         torch.save(model, filepath_best_model)
-    #         print('Model saved!')
+        # do something (save model, change lr, etc.)
+        if max_score < valid_logs['fscore']:
+            max_score = valid_logs['fscore']
+            torch.save(model, filepath_best_model)
+            print('Model saved!')
             
     return
 
