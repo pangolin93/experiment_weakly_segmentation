@@ -1,6 +1,5 @@
 import os
 from weakseg.ml.custom_train_step import WeaklyTrainEpoch, WeaklyValidEpoch
-from weakseg.ml.weakly.image_classifier import ImageClassifier
 
 import torch
 from weakseg.ml.balance_classes import get_balancer
@@ -11,7 +10,7 @@ import segmentation_models_pytorch as smp
 
 from weakseg.ml.custom_dataset import Dataset
 from weakseg.ml.model_segmentation import get_segm_model_and_preprocess_fn
-from weakseg.ml.custom_augmentation import get_preprocessing, get_training_augmentation, get_validation_augmentation
+from weakseg.ml.custom_augmentation import get_preprocessing, get_training_augmentation_strong, get_training_augmentation_weak, get_validation_augmentation
 from weakseg import DATA_DIR
 
 import logging
@@ -37,14 +36,14 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
     train_dataset = Dataset(
         x_train_dir, 
         y_train_dir, 
-        augmentation=get_training_augmentation(img_size=img_size), 
+        augmentation=get_training_augmentation_strong(img_size=img_size), 
         preprocessing=get_preprocessing(preprocessing_fn),
     )
 
     weak_dataset = Dataset(
         x_weak_dir, 
         y_weak_dir, 
-        augmentation=None, # get_validation_augmentation(img_size=img_size), 
+        augmentation=get_training_augmentation_weak(img_size=img_size), 
         preprocessing=get_preprocessing(preprocessing_fn),
     )
 
@@ -86,9 +85,6 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
     DEVICE = 'cuda'
     model = model.to(DEVICE)
 
-    model_weak = ImageClassifier()
-    model_weak = model_weak.to(DEVICE)
-
     # create epoch runners 
     # it is a simple loop of iterating over dataloader`s samples
     train_weak_epoch = WeaklyTrainEpoch(
@@ -116,21 +112,36 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
     #################################################################################################
     # ONLY WEAKLY SUPERVISED
 
+    logger.info('#' * 30)
+    logger.info('ONLY WEAK SUPERVISED')
+    logger.info('#' * 30)
+
     max_score = 0
     for i in range(0, 20):
         
-        print('\nEpoch: {}'.format(i))
+        logger.info('\nEpoch: {}'.format(i))
         train_logs = train_weak_epoch.run(weak_loader)
         valid_logs = valid_epoch.run(valid_loader)
         
+        logger.info(train_logs)
+        logger.info(valid_logs)
+
         # do something (save model, change lr, etc.)
         if max_score < valid_logs['fscore']:
             max_score = valid_logs['fscore']
             torch.save(model, filepath_best_model_weak)
-            print('Model saved!')
+            logger.info(f'Model saved at {filepath_best_model_weak}')
+
+    logger.info(f'after weak, metric validation fscore = {max_score}')
+
+    max_score_weak = max_score 
 
     #################################################################################################
     # ONLY STRONG SUPERVISED
+
+    logger.info('#' * 30)
+    logger.info('ONLY STRONG SUPERVISED')
+    logger.info('#' * 30)
 
     train_strong_epoch = WeaklyTrainEpoch(
         model=model, 
@@ -146,15 +157,20 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
     max_score = 0
     for i in range(0, 20):
         
-        print('\nEpoch: {}'.format(i))
+        logger.info('\nEpoch: {}'.format(i))
         train_logs = train_strong_epoch.run(train_loader)
         valid_logs = valid_epoch.run(valid_loader)
         
+        logger.info(train_logs)
+        logger.info(valid_logs)
+
         # do something (save model, change lr, etc.)
         if max_score < valid_logs['fscore']:
             max_score = valid_logs['fscore']
             torch.save(model, filepath_best_model)
-            print('Model saved!')
+            logger.info(f'Model saved at {filepath_best_model}')
+
+    logger.info(f'after weak, metric validation fscore = {max_score} (before it was {max_score_weak})')
             
     return
 

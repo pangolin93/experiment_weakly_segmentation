@@ -1,5 +1,5 @@
 import os
-from weakseg.ml.custom_augmentation import get_training_augmentation
+from weakseg.ml.custom_augmentation import get_training_augmentation_strong
 from weakseg.ml.transform_mask import from_multiclass_mask_to_rgb
 import cv2
 import numpy as np
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     augmented_dataset = Dataset(
         x_train_dir, 
         y_train_dir, 
-        augmentation=get_training_augmentation(), 
+        augmentation=get_training_augmentation_strong(), 
     )
 
     # same image with different random transforms
