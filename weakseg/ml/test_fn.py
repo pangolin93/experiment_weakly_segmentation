@@ -19,7 +19,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def test_fn(filepath_best_model='best_model.pth'):
+def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
     
     x_valid_dir = os.path.join(DATA_DIR, 'val_images')
     y_valid_dir = os.path.join(DATA_DIR, 'val_labels')
@@ -36,7 +36,7 @@ def test_fn(filepath_best_model='best_model.pth'):
     test_dataset = Dataset(
         x_test_dir, 
         y_test_dir, 
-        augmentation=get_validation_augmentation(), 
+        augmentation=None, 
         preprocessing=get_preprocessing(preprocessing_fn)
     )
 
@@ -87,23 +87,23 @@ def test_fn(filepath_best_model='best_model.pth'):
         pr_mask = (pr_mask.squeeze().cpu().numpy().round())
         
         dict_images = {
-            'image': image.transpose(2, 1, 0).astype(int), # (3, 224, 224) --> (224, 224, 3)
+            'image': image.transpose(2, 1, 0), # (3, 224, 224) --> (224, 224, 3)
             'gt_rgb': from_multiclass_mask_to_rgb(gt_mask.transpose(2, 1, 0)).astype(int),
             'rgb_mask': from_multiclass_mask_to_rgb(pr_mask.transpose(2, 1, 0)).astype(int)
         }
 
-        os.makedirs('tmp', exist_ok=True)
+        os.makedirs(folder_plot, exist_ok=True)
 
         visualize(
             images=dict_images,
             save_flag=True,
-            filepath_fig=os.path.join('tmp', f'aaa_{i}.png')
+            filepath_fig=os.path.join(folder_plot, f'plot_{i}.png')
         )
     
     return 
 
 if __name__ == '__main__':
 
-    test_fn(filepath_best_model='best_model.pth')
+    test_fn(filepath_best_model='best_model.pth', folder_plot='tmp')
 
-    test_fn(filepath_best_model='best_model_weak.pth')
+    test_fn(filepath_best_model='best_model_weak.pth', folder_plot='tmp_weak')
