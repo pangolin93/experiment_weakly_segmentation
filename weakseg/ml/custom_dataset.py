@@ -1,6 +1,6 @@
 import os
 from weakseg.ml.custom_augmentation import get_training_augmentation_strong
-from weakseg.ml.transform_mask import from_multiclass_mask_to_bgr
+from weakseg.ml.transform_mask import from_multiclass_mask_to_bgr, from_multiclass_mask_to_rgb
 import cv2
 import numpy as np
 
@@ -67,20 +67,21 @@ class Dataset(BaseDataset):
 
         # extract certain classes from mask
         masks = [(np.all(original_mask == k, axis=-1)) for k in self.DICT_COLOR_INDEX]
-        mask = np.stack(masks, axis=-1).astype('float')
+        mask_vanilla = np.stack(masks, axis=-1).astype('float')
+        mask = mask_vanilla
 
         # apply augmentations
         if self.augmentation:
-            sample = self.augmentation(image=image, mask=mask)
+            sample = self.augmentation(image=image, mask=mask_vanilla)
             image, mask = sample['image'], sample['mask']
         
         # apply preprocessing
         if self.preprocessing:
-            sample = self.preprocessing(image=image, mask=mask)
+            sample = self.preprocessing(image=image, mask=mask_vanilla)
             image, mask = sample['image'], sample['mask']
 
         # compute %px for each class
-        weak_label = mask.sum(axis=0).sum(axis=0) / (224*224)
+        weak_label = mask_vanilla.sum(axis=0).sum(axis=0) / (224*224)
 
         return image, mask, weak_label
         
@@ -111,7 +112,7 @@ if __name__ == '__main__':
 
         dict_images = {
             'image': image,
-            'rgb_mask': from_multiclass_mask_to_bgr(mask).astype(int)
+            'rgb_mask': from_multiclass_mask_to_rgb(mask).astype(int)
         }
         visualize(
             images=dict_images, 
@@ -121,22 +122,22 @@ if __name__ == '__main__':
 
     # #### Visualize resulted augmented images and masks
 
-    # augmented_dataset = Dataset(
-    #     x_train_dir, 
-    #     y_train_dir, 
-    #     augmentation=get_training_augmentation_strong(), 
-    # )
+    augmented_dataset = Dataset(
+        x_train_dir, 
+        y_train_dir, 
+        augmentation=get_training_augmentation_strong(), 
+    )
 
-    # # same image with different random transforms
-    # for i in range(3):
-    #     image, mask, weak_label = augmented_dataset[i]
+    # same image with different random transforms
+    for i in range(3):
+        image, mask, weak_label = augmented_dataset[i]
 
-    #     dict_images = {
-    #         'image': image,
-    #         'rgb_mask': from_multiclass_mask_to_bgr(mask).astype(int)
-    #     }
-    #     visualize(
-    #         images=dict_images, 
-    #         save_flag=True,
-    #         filepath_fig=f'aaa_{i}.png'
-    #     )
+        dict_images = {
+            'image': image,
+            'rgb_mask': from_multiclass_mask_to_rgb(mask).astype(int)
+        }
+        visualize(
+            images=dict_images, 
+            save_flag=True,
+            filepath_fig=f'aaa_{i}.png'
+        )
