@@ -67,12 +67,6 @@ class Dataset(BaseDataset):
         # extract certain classes from mask
         masks = [(np.all(original_mask == k, axis=-1)) for k in self.DICT_COLOR_INDEX]
         mask = np.stack(masks, axis=-1).astype('float')
-        
-        # compute %px for each class
-        # e.g.          array([24916.,     0.,  1639.,     0., 13445.])
-        weak_label = mask.sum(axis=0).sum(axis=0) / (224*224)
-        if (self.weakly_enabled) and (self.augmentation):
-            logger.warning('am I sure that after augmentation every cls will appear correctly?!?')
 
         # apply augmentations
         if self.augmentation:
@@ -83,7 +77,10 @@ class Dataset(BaseDataset):
         if self.preprocessing:
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample['image'], sample['mask']
-            
+
+        # compute %px for each class
+        weak_label = mask.sum(axis=0).sum(axis=0) / (224*224)
+
         return image, mask, weak_label
         
     def __len__(self):
