@@ -36,18 +36,6 @@ Weak training steps:
 - Take predicted output and compute the percentage of pixels in frame for each class, creating the prediction for weak label
 - Compare weak prediction with weak label using loss and metrics from classification problem
 
-# TODO
-- Use more complex models and algorithms to exploit or extract weak labels.
-    - https://github.com/jiwoon-ahn/irn
-    - https://github.com/MECLabTUDA/M3d-Cam
-- Refactor code
-- Resolve Bugs in logs
-    - during weak training only show sensible loss and metrics (likewise for strong training)
-- Use more complex segmentation models
-    - I stick with a very simple FPN just beacuse I dont have so much time and computational power to use other architectures
-- Try use bound box as weak labels
-- Hypertuning
-
 ## Requirements
 - Linux (tested on Ubuntu 20.04 using WSL2)
 - conda installed
@@ -57,17 +45,50 @@ Weak training steps:
     - Driver Version: 470.76
     - CUDA Version: 11.4
 
-## Download Data
+## REPRODUCE RESULTS
+
+### Download Data
 - you will use Data from ISPRS (https://www2.isprs.org/commissions/comm2/wg4/benchmark/2d-sem-label-vaihingen/)
     - be sure you have **zip** command available 
         - `sudo apt install zip`
 - to download data
     - check you are in the root folder
     - execute `bash download_data.sh <your_username> <your_pwd>`
-## Create Conda Env
+
+### Create python env
+- `conda env create -f environment.yml || conda env update -f environment.yml`
+- `conda activate segweak`
+
+### Scripts Python
+- `python weakseg/data_preparation/main_generate_dataset.py`
+- `python weakseg/ml/train_fn.py`
+- `python weakseg/ml/test_fn.py`
+
+## Results
+- logs are stored in **logs** folder
+- Some plots are generated in folders **results_\***
+
+
+## TODO
+- Use more complex models and algorithms to exploit or extract weak labels.
+    - I will try for sure IRNet https://github.com/jiwoon-ahn/irn
+- Refactor code
+    - reduce chaos in **weakseg/ml/custom_train_step.py**
+- Resolve Bugs in logs
+    - during weak training only show sensible loss and metrics (likewise for strong training)
+- Use more complex segmentation models
+    - I stick with a very simple FPN just beacuse I dont have so much time and computational power to use other architectures
+- Try use bound box as weak labels
+- Hypertuning
+- pass arguments using **argparse** or similar
+- Dockerize
+- Expand with other Data Sources
+
+## OTHER
+### Create Conda Env
 - `conda env create -f environment.yml || conda env update -f environment.yml`
 
-## Recreate Conda Env from scratch
+### Recreate Conda Env from scratch
 - `conda create -n segweak python=3.7 -y`
 - `conda activate segweak`
 
@@ -81,8 +102,6 @@ Weak training steps:
 
 
 - `conda env export --no-builds | grep -v "^-e" | grep -v "prefix" > environment.yml`
-
-
 
 
 # References
