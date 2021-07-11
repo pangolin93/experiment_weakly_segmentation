@@ -182,6 +182,6 @@ if __name__ == '__main__':
     train_fn(use_weak=False, filepath_best_model='only_strong_model.pth')
     
     logger.info('train with weak and strong labels')
-    train_fn(use_weak=True, filepath_best_model='weak_and_strong_model.pth')
+    train_fn(use_weak=True, filepath_best_model_weak='only_weak_model.pth', filepath_best_model='weak_and_strong_model.pth')
 
 
