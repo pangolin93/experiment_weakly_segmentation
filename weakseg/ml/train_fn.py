@@ -136,10 +136,25 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
 
         logger.info(f'after weak, metric validation fscore = {max_score}')
 
-        max_score_weak = max_score 
+        
 
     #################################################################################################
     # ONLY STRONG SUPERVISED
+
+    if use_weak:
+        # default lr is too high
+        optimizer = torch.optim.Adam([ 
+            dict(params=model.parameters(), lr=(0.0001 / 2.0)),
+        ])
+        
+        # i load best model from weak learning
+        model = torch.load(filepath_best_model_weak)
+
+        # i remeber best score...
+        max_score = max_score_weak
+    else:
+         max_score = 0
+
 
     logger.info('#' * 30)
     logger.info('ONLY STRONG SUPERVISED')
@@ -156,7 +171,6 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
         enable_weak=False, 
     )
 
-    max_score = 0
     for i in range(0, 20):
         
         logger.info('\nEpoch: {}'.format(i))
@@ -180,7 +194,7 @@ if __name__ == '__main__':
 
     logger.info('train with only strong labels')
     train_fn(use_weak=False, filepath_best_model='only_strong_model.pth')
-    
+
     logger.info('train with weak and strong labels')
     train_fn(use_weak=True, filepath_best_model_weak='only_weak_model.pth', filepath_best_model='weak_and_strong_model.pth')
 
