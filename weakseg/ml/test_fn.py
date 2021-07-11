@@ -1,5 +1,6 @@
 
 import os
+from weakseg.ml.custom_train_step import WeaklyValidEpoch
 import numpy as np
 import torch
 import segmentation_models_pytorch as smp
@@ -41,19 +42,25 @@ def test_fn(filepath_best_model='best_model.pth'):
 
     test_dataloader = DataLoader(test_dataset, batch_size=32)
 
-    loss = smp.utils.losses.DiceLoss()
 
-    metrics = [
+    fn_loss_strong = smp.utils.losses.DiceLoss()
+    fn_loss_weak = torch.nn.MSELoss() # (weight=torch.from_numpy(1/avg_perc_classes))
+
+    metrics_strong = [
         smp.utils.metrics.IoU(threshold=0.5),
         smp.utils.metrics.Fscore(),
         smp.utils.metrics.Accuracy(), 
     ]
 
+    metrics_weak = []
+
     # evaluate model on test set
-    test_epoch = smp.utils.train.ValidEpoch(
+    test_epoch = WeaklyValidEpoch(
         model=best_model,
-        loss=loss,
-        metrics=metrics,
+        loss_strong=fn_loss_strong,
+        loss_weak=fn_loss_weak,
+        metrics_strong=metrics_strong,
+        metrics_weak=metrics_weak,
         device=DEVICE,
     )
 
@@ -61,7 +68,7 @@ def test_fn(filepath_best_model='best_model.pth'):
 
     n = np.random.choice(len(test_dataset))
         
-    image, gt_mask = test_dataset[n]
+    image, gt_mask, y_weak = test_dataset[n]
     gt_mask = gt_mask.squeeze()
     x_tensor = torch.from_numpy(image).to(DEVICE).unsqueeze(0)
     pr_mask = best_model.predict(x_tensor)
@@ -71,7 +78,7 @@ def test_fn(filepath_best_model='best_model.pth'):
     for i in range(5):
         n = np.random.choice(len(test_dataset))
         
-        image, gt_mask = test_dataset[n]
+        image, gt_mask, y_weak = test_dataset[n]
         
         gt_mask = gt_mask.squeeze()
         
@@ -80,11 +87,13 @@ def test_fn(filepath_best_model='best_model.pth'):
         pr_mask = (pr_mask.squeeze().cpu().numpy().round())
         
         dict_images = {
-            'image': image.transpose(2, 1, 0), # (3, 224, 224) --> (224, 224, 3)
+            'image': image.transpose(2, 1, 0).astype(int), # (3, 224, 224) --> (224, 224, 3)
             'gt_rgb': from_multiclass_mask_to_rgb(gt_mask.transpose(2, 1, 0)).astype(int),
             'rgb_mask': from_multiclass_mask_to_rgb(pr_mask.transpose(2, 1, 0)).astype(int)
         }
-    
+
+        os.makedirs('tmp', exist_ok=True)
+
         visualize(
             images=dict_images,
             save_flag=True,
@@ -95,4 +104,6 @@ def test_fn(filepath_best_model='best_model.pth'):
 
 if __name__ == '__main__':
 
-    test_fn()
+    test_fn(filepath_best_model='best_model.pth')
+
+    test_fn(filepath_best_model='best_model_weak.pth')
