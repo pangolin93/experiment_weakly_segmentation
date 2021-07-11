@@ -115,18 +115,19 @@ class WeaklyTrainEpoch(Epoch):
         prediction_strong = self.model.forward(x)
         loss_strong = self.loss_strong(prediction_strong, y)
 
-        # prediction_strong.shape --> (5, 224, 224)
+        # prediction_strong.shape --> (BS, 5, 224, 224)
         
         if self.enable_weak:
-            x_weak = torch.sum(prediction_strong, dim=1)  # (5, 224)
-            count_px_classes = torch.sum(x_weak, dim=1)  # (5,)
+            x_weak = torch.sum(prediction_strong, dim=2)  # (BS, 5, 224)
+            count_px_classes = torch.sum(x_weak, dim=2)  # (BS, 5,)
             prediction_weak = torch.div(count_px_classes, 224*224) # i have percentages now
-            loss_weak = self.loss_weak(prediction_weak, y_weak)
+            loss_weak = self.loss_weak(prediction_weak.float(), y_weak.float())
         else:
             prediction_weak = None
             loss_weak = 0
-
+        
         loss = loss_strong + loss_weak
+        loss = loss.float()
         loss.backward()
         self.optimizer.step()
         return loss_strong, loss_weak, prediction_strong, prediction_weak
@@ -159,5 +160,5 @@ class WeaklyValidEpoch(Epoch):
 
             loss_weak = None
             y_pred_weak = None
-                        
+
         return loss_strong, loss_weak, y_pred_strong, y_pred_weak

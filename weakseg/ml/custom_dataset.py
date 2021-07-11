@@ -70,7 +70,7 @@ class Dataset(BaseDataset):
         
         # compute %px for each class
         # e.g.          array([24916.,     0.,  1639.,     0., 13445.])
-        weak_label = mask.sum(axis=0).sum(axis=0)
+        weak_label = mask.sum(axis=0).sum(axis=0) / (224*224)
         if (self.weakly_enabled) and (self.augmentation):
             logger.warning('am I sure that after augmentation every cls will appear correctly?!?')
 

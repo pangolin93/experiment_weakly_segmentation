@@ -57,7 +57,7 @@ def train_fn(filepath_best_model='best_model.pth'):
 
     fn_loss_strong = smp.utils.losses.DiceLoss()
 
-    fn_loss_weak = CrossEntropyLoss(weight=torch.from_numpy(1/avg_perc_classes))
+    fn_loss_weak = torch.nn.MSELoss() # (weight=torch.from_numpy(1/avg_perc_classes))
 
     metrics_strong = [
         smp.utils.metrics.IoU(threshold=0.5),
@@ -79,9 +79,6 @@ def train_fn(filepath_best_model='best_model.pth'):
     model_weak = ImageClassifier()
     model_weak = model_weak.to(DEVICE)
 
-
-    smp.utils.train.TrainEpoch
-    
     # create epoch runners 
     # it is a simple loop of iterating over dataloader`s samples
     train_epoch = WeaklyTrainEpoch(
@@ -92,7 +89,7 @@ def train_fn(filepath_best_model='best_model.pth'):
         metrics_weak=metrics_weak, 
         optimizer=optimizer, 
         device=DEVICE, 
-        enable_weak=False, 
+        enable_weak=True, 
     )
 
     valid_epoch = WeaklyValidEpoch(
