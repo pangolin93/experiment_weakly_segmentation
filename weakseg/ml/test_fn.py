@@ -24,9 +24,6 @@ def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
     x_valid_dir = os.path.join(DATA_DIR, 'val_images')
     y_valid_dir = os.path.join(DATA_DIR, 'val_labels')
 
-    x_train_dir = os.path.join(DATA_DIR, 'train_images')
-    y_train_dir = os.path.join(DATA_DIR, 'train_labels')
-
     # create test dataset
     x_test_dir = x_valid_dir
     y_test_dir = y_valid_dir
@@ -37,13 +34,13 @@ def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
     best_model = torch.load(filepath_best_model)
 
     test_dataset = Dataset(
-        x_train_dir, 
-        y_train_dir, 
+        x_test_dir, 
+        y_test_dir, 
         augmentation=None, 
         preprocessing=get_preprocessing(preprocessing_fn)
     )
 
-    test_dataloader = DataLoader(test_dataset, batch_size=32)
+    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=4)
 
 
     fn_loss_strong = smp.utils.losses.DiceLoss()
