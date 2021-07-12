@@ -1,5 +1,6 @@
 
 import os
+from weakseg.ml.custom_train_step import WeaklyValidEpoch
 import numpy as np
 import torch
 import segmentation_models_pytorch as smp
@@ -12,16 +13,19 @@ from weakseg.ml.custom_augmentation import get_preprocessing, get_validation_aug
 from weakseg import DATA_DIR, DEVICE
 from weakseg.ml.custom_dataset import Dataset
 from weakseg.utils.utils_plot import visualize
-from weakseg.ml.transform_mask import from_multiclass_mask_to_rgb
+from weakseg.ml.transform_mask import from_multiclass_mask_to_bgr, from_multiclass_mask_to_rgb
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-def test_fn(filepath_best_model='best_model.pth'):
+def test_fn(filepath_best_model='best_model.pth', folder_plot='tmp'):
     
     x_valid_dir = os.path.join(DATA_DIR, 'val_images')
     y_valid_dir = os.path.join(DATA_DIR, 'val_labels')
+
+    x_train_dir = os.path.join(DATA_DIR, 'train_images')
+    y_train_dir = os.path.join(DATA_DIR, 'train_labels')
 
     # create test dataset
     x_test_dir = x_valid_dir
@@ -33,35 +37,48 @@ def test_fn(filepath_best_model='best_model.pth'):
     best_model = torch.load(filepath_best_model)
 
     test_dataset = Dataset(
-        x_test_dir, 
-        y_test_dir, 
-        augmentation=get_validation_augmentation(), 
+        x_train_dir, 
+        y_train_dir, 
+        augmentation=None, 
         preprocessing=get_preprocessing(preprocessing_fn)
     )
 
     test_dataloader = DataLoader(test_dataset, batch_size=32)
 
-    loss = smp.utils.losses.DiceLoss()
 
-    metrics = [
+    fn_loss_strong = smp.utils.losses.DiceLoss()
+    fn_loss_weak = torch.nn.MSELoss() # (weight=torch.from_numpy(1/avg_perc_classes))
+
+    metrics_strong = [
         smp.utils.metrics.IoU(threshold=0.5),
         smp.utils.metrics.Fscore(),
         smp.utils.metrics.Accuracy(), 
     ]
 
+    metrics_weak = []
+
     # evaluate model on test set
-    test_epoch = smp.utils.train.ValidEpoch(
+    test_epoch = WeaklyValidEpoch(
         model=best_model,
-        loss=loss,
-        metrics=metrics,
+        loss_strong=fn_loss_strong,
+        loss_weak=fn_loss_weak,
+        metrics_strong=metrics_strong,
+        metrics_weak=metrics_weak,
         device=DEVICE,
     )
 
     logs = test_epoch.run(test_dataloader)
 
+
+    logger.info(f'model loaded from {filepath_best_model}')
+    logger.info(f'logs: {logs}')
+
+    print(f'model loaded from {filepath_best_model}')
+    print(f'logs: {logs}')
+
     n = np.random.choice(len(test_dataset))
         
-    image, gt_mask = test_dataset[n]
+    image, gt_mask, y_weak = test_dataset[n]
     gt_mask = gt_mask.squeeze()
     x_tensor = torch.from_numpy(image).to(DEVICE).unsqueeze(0)
     pr_mask = best_model.predict(x_tensor)
@@ -71,28 +88,34 @@ def test_fn(filepath_best_model='best_model.pth'):
     for i in range(5):
         n = np.random.choice(len(test_dataset))
         
-        image, gt_mask = test_dataset[n]
+        image, gt_mask, y_weak = test_dataset[i]
         
         gt_mask = gt_mask.squeeze()
         
         x_tensor = torch.from_numpy(image).to(DEVICE).unsqueeze(0)
         pr_mask = best_model.predict(x_tensor)
         pr_mask = (pr_mask.squeeze().cpu().numpy().round())
-        
+
         dict_images = {
             'image': image.transpose(2, 1, 0), # (3, 224, 224) --> (224, 224, 3)
-            'gt_rgb': from_multiclass_mask_to_rgb(gt_mask.transpose(2, 1, 0)).astype(int),
-            'rgb_mask': from_multiclass_mask_to_rgb(pr_mask.transpose(2, 1, 0)).astype(int)
+            'gt_rgb': from_multiclass_mask_to_rgb(gt_mask.transpose(2, 1, 0)),
+            'rgb_mask': from_multiclass_mask_to_rgb(pr_mask.transpose(2, 1, 0))
         }
-    
+
+        os.makedirs(folder_plot, exist_ok=True)
+
         visualize(
             images=dict_images,
             save_flag=True,
-            filepath_fig=os.path.join('tmp', f'aaa_{i}.png')
+            filepath_fig=os.path.join(folder_plot, f'plot_{i}.png')
         )
     
     return 
 
 if __name__ == '__main__':
 
-    test_fn()
+    test_fn(filepath_best_model='only_strong_model.pth', folder_plot='results_only_strong')
+
+    test_fn(filepath_best_model='only_weak_model.pth', folder_plot='results_only_weak')
+
+    test_fn(filepath_best_model='weak_and_strong_model.pth', folder_plot='results_weak_strong')

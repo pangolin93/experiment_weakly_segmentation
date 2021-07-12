@@ -1,6 +1,6 @@
 import os
-from weakseg.ml.custom_augmentation import get_training_augmentation
-from weakseg.ml.transform_mask import from_multiclass_mask_to_rgb
+from weakseg.ml.custom_augmentation import get_training_augmentation_strong
+from weakseg.ml.transform_mask import from_multiclass_mask_to_bgr, from_multiclass_mask_to_rgb
 import cv2
 import numpy as np
 
@@ -8,6 +8,11 @@ from torch.utils.data import Dataset as BaseDataset
 
 from weakseg import DATA_DIR, DICT_COLOR_INDEX
 from weakseg.utils.utils_plot import visualize
+
+
+import logging
+logger = logging.getLogger(__name__)
+
 class Dataset(BaseDataset):
     """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
     
@@ -30,6 +35,7 @@ class Dataset(BaseDataset):
             self, 
             images_dir, 
             masks_dir, 
+            weakly_enabled=False, 
             augmentation=None, 
             preprocessing=None,
     ):
@@ -42,6 +48,8 @@ class Dataset(BaseDataset):
 
         self.masks_fps = [os.path.join(masks_dir, image_id) for image_id in self.ids]
 
+        self.weakly_enabled = weakly_enabled
+
         self.class_values = self.DICT_COLOR_INDEX
         
         self.augmentation = augmentation
@@ -53,24 +61,29 @@ class Dataset(BaseDataset):
         image = cv2.imread(str(self.images_fps[i]))
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+        # BGR channels!!!
+        # i need BGR beacuse of the values in DICT_INDEX_COLOR
         original_mask = cv2.imread(str(self.masks_fps[i]))
-        original_mask = cv2.cvtColor(original_mask, cv2.COLOR_BGR2RGB)
 
         # extract certain classes from mask
         masks = [(np.all(original_mask == k, axis=-1)) for k in self.DICT_COLOR_INDEX]
-        mask = np.stack(masks, axis=-1).astype('float')
-        
+        mask_vanilla = np.stack(masks, axis=-1).astype('float')
+        mask = mask_vanilla
+
         # apply augmentations
         if self.augmentation:
-            sample = self.augmentation(image=image, mask=mask)
+            sample = self.augmentation(image=image, mask=mask_vanilla)
             image, mask = sample['image'], sample['mask']
         
         # apply preprocessing
         if self.preprocessing:
-            sample = self.preprocessing(image=image, mask=mask)
+            sample = self.preprocessing(image=image, mask=mask_vanilla)
             image, mask = sample['image'], sample['mask']
-            
-        return image, mask
+
+        # compute %px for each class
+        weak_label = mask_vanilla.sum(axis=0).sum(axis=0) / (224*224)
+
+        return image, mask, weak_label
         
     def __len__(self):
         return len(self.images_fps)
@@ -85,31 +98,17 @@ if __name__ == '__main__':
     x_valid_dir = os.path.join(DATA_DIR, 'val_images')
     y_valid_dir = os.path.join(DATA_DIR, 'val_labels')
 
-    dataset = Dataset(x_train_dir, y_train_dir)
+    x_weak_dir = os.path.join(DATA_DIR, 'weak_images')
+    y_weak_dir = os.path.join(DATA_DIR, 'weak_labels')
+    weak_y_weak_dir = os.path.join(DATA_DIR, 'weak_clslabels')
 
-    image, mask = dataset[42] # get some sample
+    dataset = Dataset(x_weak_dir, y_weak_dir, weak_y_weak_dir)
 
-    print((image.shape, mask.shape))
 
-    dict_images = {
-        'image': image,
-        'rgb_mask': from_multiclass_mask_to_rgb(mask).astype(int)
-    }
-    visualize(
-        images=dict_images, 
-    )
+    for i in range(5):
+        image, mask, weak_label = dataset[i] # get some sample
 
-    #### Visualize resulted augmented images and masks
-
-    augmented_dataset = Dataset(
-        x_train_dir, 
-        y_train_dir, 
-        augmentation=get_training_augmentation(), 
-    )
-
-    # same image with different random transforms
-    for i in range(3):
-        image, mask = augmented_dataset[i]
+        print((image.shape, mask.shape, weak_label.shape))
 
         dict_images = {
             'image': image,
@@ -117,5 +116,28 @@ if __name__ == '__main__':
         }
         visualize(
             images=dict_images, 
-            save_flag=True
+            save_flag=True,
+            filepath_fig=f'aaa_{i}.png'
+        )
+
+    # #### Visualize resulted augmented images and masks
+
+    augmented_dataset = Dataset(
+        x_train_dir, 
+        y_train_dir, 
+        augmentation=get_training_augmentation_strong(), 
+    )
+
+    # same image with different random transforms
+    for i in range(3):
+        image, mask, weak_label = augmented_dataset[i]
+
+        dict_images = {
+            'image': image,
+            'rgb_mask': from_multiclass_mask_to_rgb(mask).astype(int)
+        }
+        visualize(
+            images=dict_images, 
+            save_flag=True,
+            filepath_fig=f'aaa_{i}.png'
         )

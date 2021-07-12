@@ -1,6 +1,6 @@
 import albumentations as albu
 
-def get_training_augmentation(img_size=224):
+def get_training_augmentation_strong(img_size=224):
     train_transform = [
 
         albu.HorizontalFlip(p=0.5),
@@ -37,6 +37,19 @@ def get_training_augmentation(img_size=224):
             ],
             p=0.9,
         ),
+    ]
+    return albu.Compose(train_transform)
+
+
+def get_training_augmentation_weak(img_size=224):
+    train_transform = [
+        
+        # https://albumentations.ai/docs/api_reference/augmentations/transforms/#albumentations.augmentations.transforms.Flip
+        # Flip horizzontally and/or vertically with prob 0.5
+        albu.Flip(p=0.5),
+
+        albu.PadIfNeeded(min_height=img_size, min_width=img_size, always_apply=True, border_mode=0),
+
     ]
     return albu.Compose(train_transform)
 
