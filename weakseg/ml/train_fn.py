@@ -145,13 +145,12 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
     # ONLY STRONG SUPERVISED
 
     if use_weak:
-        # default lr is too high
-        optimizer = torch.optim.Adam([ 
-            dict(params=model.parameters(), lr=(0.0001 / 2.0)),
-        ])
-        
         # i load best model from weak learning
         model = torch.load(filepath_best_model_weak)
+        
+        optimizer = torch.optim.Adam([ 
+            dict(params=model.parameters(), lr=(0.0001 * 2.0)),
+        ])
 
         # i remeber best score...
         max_score = max_score_weak
