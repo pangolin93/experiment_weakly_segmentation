@@ -66,8 +66,18 @@ Weak training steps:
 - `python weakseg/ml/test_fn.py`
 
 ## Results
-- logs are stored in **logs** folder
-- Some plots are generated in folders **results_\***
+classes are imbalanced, I decided to use fscore as driver metric
+
+| experiment    | fscore on validation |
+|---------------|----------------------|
+| only strong   | 0.7399               |
+| only weak     | 0.8058               |
+| weak + strong | 0.7961               |
+
+
+- Notes
+    - logs are stored in **logs** folder
+    - Some plots are generated in folders **results_\***
 
 
 ## TODO
@@ -85,6 +95,7 @@ Weak training steps:
 - Check Docker Part is ok
 - Expand with other Data Sources
 - Remove pre-computation weak labels (now it is done "online")
+- Evaluate models with test set (and not validation)
 
 ## OTHER
 ### Create Conda Env
