@@ -119,7 +119,7 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
         logger.info('#' * 30)
 
         max_score = 0
-        for i in range(0, 20):
+        for i in range(0, 30):
             
             logger.info('\nEpoch: {}'.format(i))
             train_logs = train_weak_epoch.run(weak_loader)
@@ -171,7 +171,7 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
         enable_weak=False, 
     )
 
-    for i in range(0, 20):
+    for i in range(0, 30):
         
         logger.info('\nEpoch: {}'.format(i))
         train_logs = train_strong_epoch.run(train_loader)
@@ -195,6 +195,8 @@ if __name__ == '__main__':
     logger.info('train with only strong labels')
     train_fn(use_weak=False, filepath_best_model='only_strong_model.pth')
 
+    logger.info('\n\n')
+    
     logger.info('train with weak and strong labels')
     train_fn(use_weak=True, filepath_best_model_weak='only_weak_model.pth', filepath_best_model='weak_and_strong_model.pth')
 
