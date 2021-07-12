@@ -137,6 +137,8 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
 
         logger.info(f'after weak, metric validation fscore = {max_score}')
 
+        max_score_weak = max_score
+
         
 
     #################################################################################################
@@ -154,7 +156,7 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
         # i remeber best score...
         max_score = max_score_weak
     else:
-         max_score = 0
+        max_score = 0
 
 
     logger.info('#' * 30)
