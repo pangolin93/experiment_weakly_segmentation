@@ -84,6 +84,7 @@ Weak training steps:
 - pass arguments using **argparse** or similar
 - Check Docker Part is ok
 - Expand with other Data Sources
+- Remove pre-computation weak labels (now it is done "online")
 
 ## OTHER
 ### Create Conda Env
