@@ -40,6 +40,7 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
         preprocessing=get_preprocessing(preprocessing_fn),
     )
 
+    # i prefer to do easy augmentations here since i need to deal with %px
     weak_dataset = Dataset(
         x_weak_dir, 
         y_weak_dir, 
@@ -57,9 +58,9 @@ def train_fn(filepath_best_model_weak='best_model_weak.pth', filepath_best_model
     list_mask = [train_dataset[i][1] for i in tqdm(range(train_dataset.num_images))]
     weighted_sampler, avg_perc_classes = get_balancer(list_mask)
 
-    train_loader = DataLoader(train_dataset, batch_size=8*2, num_workers=2, sampler=weighted_sampler)
-    valid_loader = DataLoader(valid_dataset, batch_size=8*2, shuffle=False, num_workers=2)
-    weak_loader = DataLoader(weak_dataset, batch_size=8*2, shuffle=False, num_workers=2)
+    train_loader = DataLoader(train_dataset, batch_size=8*2, sampler=weighted_sampler, num_workers=4)
+    valid_loader = DataLoader(valid_dataset, batch_size=8*2, shuffle=False, num_workers=4)
+    weak_loader = DataLoader(weak_dataset, batch_size=8*2, sampler=weighted_sampler, num_workers=4)
 
     # Dice/F1 score - https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
     # IoU/Jaccard score - https://en.wikipedia.org/wiki/Jaccard_index
