@@ -58,6 +58,7 @@ Weak training steps:
 ### Create python env
 - `conda env create -f environment.yml || conda env update -f environment.yml`
 - `conda activate segweak`
+- `pip install -e .`
 
 ### Scripts Python
 - `python weakseg/data_preparation/main_generate_dataset.py`
@@ -81,7 +82,7 @@ Weak training steps:
 - Try use bound box as weak labels
 - Hypertuning
 - pass arguments using **argparse** or similar
-- Dockerize
+- Check Docker Part is ok
 - Expand with other Data Sources
 
 ## OTHER
